@@ -60,7 +60,6 @@ median(meanDay2, na.rm = TRUE)
 ```r
 meanInterval2 <- with(data, tapply(steps, interval, mean, na.rm = TRUE))
 
-
 forP <- data.frame(unique(data$interval), meanInterval2)
 ind = 0
 iMax <- max(forP[, 2]) 
@@ -178,8 +177,7 @@ data2$wdFactor <- weekdays(as.Date(data2$date), abbreviate = TRUE)
 data2$wdFactor <- replace(data2$wdFactor, data2$wdFactor %in% c("Sun", "Sat"), "weekend")
 data2$wdFactor <- replace(data2$wdFactor, data2$wdFactor %in% c("Mon", "Tue", "Wed", "Thu", "Fri"), "weekday")
 
-data3 <- group_by(data2, interval, wdFactor) %>%
-                                summarise_each(funs(mean))
+data3 <- group_by(data2, interval, wdFactor) %>% summarise_each(funs(mean))
 
 xyplot(steps ~ interval | wdFactor, data = data3, layout = c(1, 2), type = "l", col = "blue")
 ```

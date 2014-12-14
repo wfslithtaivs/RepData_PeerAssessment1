@@ -17,7 +17,6 @@ summary(data)
 ## What is mean total number of steps taken per day?
 
 ```{r, echo = TRUE}
-
 meanDay2 <- with(data, tapply(steps, date, sum))
 
 hist(meanDay2, 
@@ -25,7 +24,6 @@ hist(meanDay2,
         ylab = " ", 
         main = "Mean total number of steps taken per day",
         col = "blue")
-
 ```
 
 *Mean and median*
@@ -38,7 +36,6 @@ median(meanDay2, na.rm = TRUE)
 ## What is the average daily activity pattern?
 ```{r, echo = TRUE}
 meanInterval2 <- with(data, tapply(steps, interval, mean, na.rm = TRUE))
-
 
 forP <- data.frame(unique(data$interval), meanInterval2)
 ind = 0
@@ -55,7 +52,6 @@ infS2 <- paste(ceiling(iMax), "steps", sep = " ")
 text(ind, iMax, paste(infS1, infS2, sep = "\n"), cex=0.5, pos=4, col="red")
 
 paste(infS1, infS2, sep = ", ")
-
 ```
 
 ## Imputing missing values
@@ -102,8 +98,7 @@ data2$wdFactor <- weekdays(as.Date(data2$date), abbreviate = TRUE)
 data2$wdFactor <- replace(data2$wdFactor, data2$wdFactor %in% c("Sun", "Sat"), "weekend")
 data2$wdFactor <- replace(data2$wdFactor, data2$wdFactor %in% c("Mon", "Tue", "Wed", "Thu", "Fri"), "weekday")
 
-data3 <- group_by(data2, interval, wdFactor) %>%
-                                summarise_each(funs(mean))
+data3 <- group_by(data2, interval, wdFactor) %>% summarise_each(funs(mean))
 
 xyplot(steps ~ interval | wdFactor, data = data3, layout = c(1, 2), type = "l", col = "blue")
 
