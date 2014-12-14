@@ -18,7 +18,7 @@ summary(data)
 
 ```{r, echo = TRUE}
 
-meanDay2 <- with(data, tapply(steps, date, mean))
+meanDay2 <- with(data, tapply(steps, date, sum))
 
 hist(meanDay2, 
         xlab = "Steps", 
@@ -26,9 +26,12 @@ hist(meanDay2,
         main = "Mean total number of steps taken per day",
         col = "blue")
 
+```
+
+*Mean and median*
+```{r, echo = TRUE}
 mean(meanDay2, na.rm = TRUE)
 median(meanDay2, na.rm = TRUE)
-head(meanDay2)
 ```
 
 
@@ -63,13 +66,17 @@ paste("Total number of missing values:", sum(is.na(data$steps) == TRUE), sep = "
 
 # 2. 3. Imputting day averages instead of missing values
 meanDay <- replace(meanDay2, is.na(meanDay2), 0)
+
 data2 <- data
 for (i in 1:length(data2[, 2])) 
         if (is.na(data2[ , 1][i])) 
                 data2[, 1][i] <- meanDay[data2[, 2][i]]
+#Any NAs?
+summary(data2)
+# Thanks, no!
 
 # 4.
-meanDay3 <- with(data2, tapply(steps, date, mean))
+meanDay3 <- with(data2, tapply(steps, date, sum))
 
 hist(meanDay3, 
         xlab = "Steps", 
@@ -79,18 +86,25 @@ hist(meanDay3,
 
 mean(meanDay3, na.rm = TRUE)
 median(meanDay3, na.rm = TRUE)
-head(meanDay3)
-
 ```
-## Are there differences in activity patterns between weekdays and weekends?
-```{r, echo = TRUE}
-Sys.setlocale("LC_ALL", 'en_US.UTF-8')
 
+## Are there differences in activity patterns between weekdays and weekends?
+
+```{r, echo = FALSE}
+library(lattice)
+library(dplyr)
+
+Sys.setlocale("LC_ALL", 'en_US.UTF-8')
+```
+
+```{r, echo = TRUE}
 data2$wdFactor <- weekdays(as.Date(data2$date), abbreviate = TRUE)
 data2$wdFactor <- replace(data2$wdFactor, data2$wdFactor %in% c("Sun", "Sat"), "weekend")
 data2$wdFactor <- replace(data2$wdFactor, data2$wdFactor %in% c("Mon", "Tue", "Wed", "Thu", "Fri"), "weekday")
-data2$wdFactor <- as.factor(data2$wdFactor) 
-summary(data2$wdFactor)
 
+data3 <- group_by(data2, interval, wdFactor) %>%
+                                summarise_each(funs(mean))
+
+xyplot(steps ~ interval | wdFactor, data = data3, layout = c(1, 2), type = "l", col = "blue")
 
 ```

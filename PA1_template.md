@@ -25,7 +25,7 @@ summary(data)
 
 
 ```r
-meanDay2 <- with(data, tapply(steps, date, mean))
+meanDay2 <- with(data, tapply(steps, date, sum))
 
 hist(meanDay2, 
         xlab = "Steps", 
@@ -36,12 +36,14 @@ hist(meanDay2,
 
 ![](./PA1_template_files/figure-html/unnamed-chunk-2-1.png) 
 
+*Mean and median*
+
 ```r
 mean(meanDay2, na.rm = TRUE)
 ```
 
 ```
-## [1] 37.3826
+## [1] 10766.19
 ```
 
 ```r
@@ -49,16 +51,7 @@ median(meanDay2, na.rm = TRUE)
 ```
 
 ```
-## [1] 37.37847
-```
-
-```r
-head(meanDay2)
-```
-
-```
-## 2012-10-01 2012-10-02 2012-10-03 2012-10-04 2012-10-05 2012-10-06 
-##         NA    0.43750   39.41667   42.06944   46.15972   53.54167
+## [1] 10765
 ```
 
 
@@ -83,7 +76,7 @@ infS2 <- paste(ceiling(iMax), "steps", sep = " ")
 text(ind, iMax, paste(infS1, infS2, sep = "\n"), cex=0.5, pos=4, col="red")
 ```
 
-![](./PA1_template_files/figure-html/unnamed-chunk-3-1.png) 
+![](./PA1_template_files/figure-html/unnamed-chunk-4-1.png) 
 
 ```r
 paste(infS1, infS2, sep = ", ")
@@ -108,13 +101,31 @@ paste("Total number of missing values:", sum(is.na(data$steps) == TRUE), sep = "
 ```r
 # 2. 3. Imputting day averages instead of missing values
 meanDay <- replace(meanDay2, is.na(meanDay2), 0)
+
 data2 <- data
 for (i in 1:length(data2[, 2])) 
         if (is.na(data2[ , 1][i])) 
                 data2[, 1][i] <- meanDay[data2[, 2][i]]
+#Any NAs?
+summary(data2)
+```
+
+```
+##      steps                date          interval     
+##  Min.   :  0.00   2012-10-01:  288   Min.   :   0.0  
+##  1st Qu.:  0.00   2012-10-02:  288   1st Qu.: 588.8  
+##  Median :  0.00   2012-10-03:  288   Median :1177.5  
+##  Mean   : 32.48   2012-10-04:  288   Mean   :1177.5  
+##  3rd Qu.:  0.00   2012-10-05:  288   3rd Qu.:1766.2  
+##  Max.   :806.00   2012-10-06:  288   Max.   :2355.0  
+##                   (Other)   :15840
+```
+
+```r
+# Thanks, no!
 
 # 4.
-meanDay3 <- with(data2, tapply(steps, date, mean))
+meanDay3 <- with(data2, tapply(steps, date, sum))
 
 hist(meanDay3, 
         xlab = "Steps", 
@@ -123,14 +134,14 @@ hist(meanDay3,
         col = "green")
 ```
 
-![](./PA1_template_files/figure-html/unnamed-chunk-4-1.png) 
+![](./PA1_template_files/figure-html/unnamed-chunk-5-1.png) 
 
 ```r
 mean(meanDay3, na.rm = TRUE)
 ```
 
 ```
-## [1] 32.47996
+## [1] 9354.23
 ```
 
 ```r
@@ -138,36 +149,39 @@ median(meanDay3, na.rm = TRUE)
 ```
 
 ```
-## [1] 36.09375
+## [1] 10395
 ```
 
-```r
-head(meanDay3)
-```
-
-```
-## 2012-10-01 2012-10-02 2012-10-03 2012-10-04 2012-10-05 2012-10-06 
-##    0.00000    0.43750   39.41667   42.06944   46.15972   53.54167
-```
 ## Are there differences in activity patterns between weekdays and weekends?
 
-```r
-Sys.setlocale("LC_ALL", 'en_US.UTF-8')
+
+```
+## 
+## Attaching package: 'dplyr'
+## 
+## The following object is masked from 'package:stats':
+## 
+##     filter
+## 
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
 ```
 
 ```
 ## [1] "en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/ru_RU.UTF-8"
 ```
 
+
 ```r
 data2$wdFactor <- weekdays(as.Date(data2$date), abbreviate = TRUE)
 data2$wdFactor <- replace(data2$wdFactor, data2$wdFactor %in% c("Sun", "Sat"), "weekend")
 data2$wdFactor <- replace(data2$wdFactor, data2$wdFactor %in% c("Mon", "Tue", "Wed", "Thu", "Fri"), "weekday")
-data2$wdFactor <- as.factor(data2$wdFactor) 
-summary(data2$wdFactor)
+
+data3 <- group_by(data2, interval, wdFactor) %>%
+                                summarise_each(funs(mean))
+
+xyplot(steps ~ interval | wdFactor, data = data3, layout = c(1, 2), type = "l", col = "blue")
 ```
 
-```
-## weekday weekend 
-##   12960    4608
-```
+![](./PA1_template_files/figure-html/unnamed-chunk-7-1.png) 
